@@ -3,6 +3,7 @@ import java.awt.Graphics;
 
 public class HelloApplet extends Applet {
 	public void paint(Graphics g) {
-		g.drawString("Hello From The Other Siiiiide!", 50, 100);	
+		String passedName = new String(getParameter("passname"));
+		g.drawString(passedName, 50, 100);	
 	}
 }
