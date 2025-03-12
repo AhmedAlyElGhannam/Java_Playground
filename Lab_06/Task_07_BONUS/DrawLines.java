@@ -15,10 +15,7 @@ import java.util.ArrayList;
 
 public class DrawLines extends Applet {
 
-	// final byte MAX_LINE_COUNT = 3;
 	ArrayList<Line> drawnLines;
-	// byte lineCounter = 0;
-
 	Line dumDumLine;
 
 	public void init() {
@@ -61,16 +58,8 @@ public class DrawLines extends Applet {
 			g.drawLine(dumDumLine.x1, dumDumLine.y1, dumDumLine.x2, dumDumLine.y2);
 		}
 
-		// for (int iter = 0; iter < lineCounter; iter++) {
-		// 	if (drawnLines[iter] != null) { 
-        //         g.drawLine(drawnLines[iter].x1, drawnLines[iter].y1, drawnLines[iter].x2, drawnLines[iter].y2);
-        //     }
-		// }
-
 		for (Line drawnLine : drawnLines) {
-			// if (drawnLine[iter] != null) { 
-			    g.drawLine(drawnLine.x1, drawnLine.y1, drawnLine.x2, drawnLine.y2);
-			// }
+			g.drawLine(drawnLine.x1, drawnLine.y1, drawnLine.x2, drawnLine.y2);
 		}
 	}
 	
