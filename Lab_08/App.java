@@ -18,11 +18,14 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import java.io.FileOutputStream;
 import java.util.Optional;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 import javafx.application.Platform;
 import javafx.scene.control.ButtonBar.ButtonData;
+import java.io.*;
+import javafx.scene.control.IndexRange;
 
 public class App extends Application {
 
@@ -31,8 +34,10 @@ public class App extends Application {
     
     Menu file;
     MenuItem newFile;
-    MenuItem openFile;
-    MenuItem saveFile;
+    MenuItem openFileLow;
+    MenuItem openFileHigh;
+    MenuItem saveFileLow;
+    MenuItem saveFileHigh;
     MenuItem exitFile;
     
 
@@ -64,10 +69,14 @@ public class App extends Application {
         // file submenus + shortcuts       
         newFile  = new MenuItem("New");
         newFile.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
-        openFile = new MenuItem("Open File");
-        openFile.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
-        saveFile = new MenuItem("Save");
-        saveFile.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
+        openFileLow = new MenuItem("Open File Low-Level");
+        openFileLow.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
+        openFileHigh = new MenuItem("Open File High-Level");
+        openFileHigh.setAccelerator(KeyCombination.keyCombination("Ctrl+Shift+O"));
+        saveFileLow = new MenuItem("Save Low-Level");
+        saveFileLow.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
+        saveFileHigh = new MenuItem("Save High-Level");
+        saveFileHigh.setAccelerator(KeyCombination.keyCombination("Ctrl+Shift+S"));
         exitFile = new MenuItem("Exit");
         exitFile.setAccelerator(KeyCombination.keyCombination("Ctrl+Q"));
 
@@ -75,7 +84,7 @@ public class App extends Application {
         file = new Menu("File");
 
         // add submenus to file menu
-        file.getItems().addAll(newFile, openFile, saveFile, exitFile);
+        file.getItems().addAll(newFile, openFileLow, openFileHigh, saveFileLow, saveFileHigh,exitFile);
 
         // edit submenus + shortcuts      
         undoText = new MenuItem("Undo");
@@ -143,31 +152,95 @@ public class App extends Application {
            }
         });
 
-        openFile.setOnAction(new EventHandler<ActionEvent>(){
+        openFileLow.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Failure!");
-                alert.setHeaderText(null);
-                alert.setContentText("Feature is Not Implemented!");
+                FileChooser fc = new FileChooser();
+                try {
+                    File file = fc.showOpenDialog(null);
+                    if (file != null) {
+                        FileInputStream fis = new FileInputStream(file);
+                        int size = fis.available();
+                        byte[] b = new byte[size];
+                        fis.read(b);
+                        ta.setText(new String(b));
+                        fis.close();
+                    }
+                } catch(IOException ex) {
+                        System.out.println (ex.toString());
+                        System.out.println("Could not find file " + file);
+                }
 
-                alert.showAndWait();
            }
         });
 
-        saveFile.setOnAction(new EventHandler<ActionEvent>(){
+        openFileHigh.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
-                TextInputDialog dialog = new TextInputDialog("file.txt");
-                dialog.setTitle("Save File");
-                dialog.setHeaderText("");
-                dialog.setContentText("Enter File Name: ");
-
-                // Traditional way to get the response value.
-                Optional<String> result = dialog.showAndWait();
-                if (result.isPresent()){
-                    isFileSaved = true;
+                FileChooser fc = new FileChooser();
+                try {
+                    File file = fc.showOpenDialog(null);
+                    if (file != null) {
+                        FileInputStream fis = new FileInputStream(file);
+                        DataInputStream dis = new DataInputStream(fis);
+                        ta.setText(new String(dis.readUTF()));
+                        dis.close();
+                        fis.close();
+                    }
+                } catch (EOFException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("EOF Exception");
+                } catch(IOException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("Could not find file " + file);
                 }
+           }
+        });
+
+        saveFileLow.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fc = new FileChooser();
+                try {
+                    File file = fc.showSaveDialog(null);
+                    if (file != null) {
+                        FileOutputStream fos = new FileOutputStream(file);
+                        byte[] b = ta.getText().getBytes();
+                        fos.write(b);
+                        fos.close();
+                    }
+                } catch (EOFException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("EOF Exception");
+                } catch(IOException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("Could not find file " + file);
+                }
+                
+           }
+        });
+
+        saveFileHigh.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fc = new FileChooser();
+                try {
+                    File file = fc.showSaveDialog(null);
+                    if (file != null) {
+                        FileOutputStream fos = new FileOutputStream(file);
+                        DataOutputStream dos = new DataOutputStream(fos);
+                        dos.writeUTF(ta.getText());
+                        dos.close();
+                        fos.close();
+                    }
+                } catch (EOFException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("EOF Exception");
+                } catch(IOException ex) {
+                    System.out.println (ex.toString());
+                    System.out.println("Could not find file " + file);
+                }
+                
            }
         });
 
@@ -249,7 +322,8 @@ public class App extends Application {
         deleteText.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
-                ta.deletePreviousChar();
+                IndexRange range = ta.getSelection(); // returns index range
+                ta.deleteText(range); // deletes text within range
            }
         });
 
@@ -279,11 +353,3 @@ public class App extends Application {
         Application.launch(args);
     }
 }
-
-
-
-
-
-
-
-
