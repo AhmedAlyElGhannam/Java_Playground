@@ -1,0 +1,5 @@
+register/dal/DAO.class
+module-info.class
+com/mycompany/dbapp/PrimaryController.class
+register/dal/UserDTO.class
+com/mycompany/dbapp/App.class
